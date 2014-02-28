@@ -4,6 +4,39 @@
 *	distance between nodes may be drawn between nodes for added special effects.
 */
 
+/*** Shim for ensuring animation always works ***/
+// http://paulirish.com/2011/requestanimationframe-for-smart-animating/
+// http://my.opera.com/emoller/blog/2011/12/20/requestanimationframe-for-smart-er-animating
+
+// requestAnimationFrame polyfill by Erik Möller. fixes from Paul Irish and Tino Zijdel
+
+// MIT license
+
+(function() {
+    var lastTime = 0;
+    var vendors = ['ms', 'moz', 'webkit', 'o'];
+    for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+        window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+        window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame']
+                                   || window[vendors[x]+'CancelRequestAnimationFrame'];
+    }
+
+    if (!window.requestAnimationFrame)
+        window.requestAnimationFrame = function(callback, element) {
+            var currTime = new Date().getTime();
+            var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+            var id = window.setTimeout(function() { callback(currTime + timeToCall); },
+              timeToCall);
+            lastTime = currTime + timeToCall;
+            return id;
+        };
+
+    if (!window.cancelAnimationFrame)
+        window.cancelAnimationFrame = function(id) {
+            clearTimeout(id);
+        };
+}());
+
 /*** Contain within a module for re-usability ***/
 var Nodulator = {
 
@@ -27,7 +60,32 @@ var Nodulator = {
 		this.canvas = document.getElementById(this.settings.canvasID);
 		this.ctx = this.canvas.getContext('2d');
 
+		this.ctx.canvas.width  = window.innerWidth; //Set canvas to current window size - minus space for image input
+		this.ctx.canvas.height = window.innerHeight - 50;
+
 		document.getElementById(this.settings.inputID).addEventListener('change', this.updateImage, false);
+	},
+
+	/*** Recursive animation of nodes ***/
+	animate: function() {
+		 this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); //Clear
+
+		 /* Redraw */
+		 this.drawNodes();
+
+		 requestAnimationFrame(function(){ Nodulator.animate() }); //Get new frame (see below for compatability shim)
+	},
+
+	/*** Draw each node ***/
+	drawNodes: function() {
+		for(var i = 0; i < this.nodes.length; i++) {
+			this.ctx.fillStyle = this.nodes[i].colour;
+			this.ctx.strokeStyle = this.nodes[i].colour;
+			this.ctx.beginPath();
+			this.ctx.arc(this.nodes[i].x, this.nodes[i].y, this.settings.nodeRadius ,0 , 6.284); //6.284 instead of 2*pi used for effeciency
+			this.ctx.closePath();
+			this.ctx.fill();
+		}
 	},
 
 	/*** Note: 'this' context change***/
@@ -79,22 +137,10 @@ var Nodulator = {
 					}
 				}
 			}
-			Nodulator.drawNodes(); //Place here to ensure only started once node generation is complete
+			Nodulator.animate(); //Place here to ensure only started once node generation is complete
 		};
 		img.src = src;
-	},
-
-	/*** Draw each node ***/
-	drawNodes: function() {
-		for(var i = 0; i < this.nodes.length; i++) {
-			this.ctx.fillStyle = this.nodes[i].colour;
-			this.ctx.strokeStyle = this.nodes[i].colour;
-			this.ctx.beginPath();
-			this.ctx.arc(this.nodes[i].x, this.nodes[i].y, this.settings.nodeRadius ,0 , 6.284); //6.284 instead of 2*pi used for effeciency
-			this.ctx.closePath();
-			this.ctx.fill();
-		}
 	}
 }
 
-Nodulator.init();
+Nodulator.init(); //Start the Nodulator!!

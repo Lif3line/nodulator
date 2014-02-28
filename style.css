@@ -6,7 +6,5 @@ html, body {
 }
 
 #nodeBox {
-	width: 640px;
-	height: 480px;
-	background-color: #777777; /* Won't work on Andriod */
+	background-color: #dddddd; /* Won't work on Andriod */
 }
