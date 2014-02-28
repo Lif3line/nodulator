@@ -64,6 +64,25 @@ var Nodulator = {
 		this.ctx.canvas.height = window.innerHeight - 50;
 
 		document.getElementById(this.settings.inputID).addEventListener('change', this.updateImage, false);
+
+		/* Mouse listeners */
+		window.addEventListener('mouseup',   this.mouseUp,   false);	// Detect mouse up/down anywhere
+		window.addEventListener('mousedown', this.mouseDown, false);
+		this.canvas.addEventListener('mouseout',  this.mouseLeave,  false);
+		this.canvas.addEventListener('mousemove', this.mouseMove, false);
+
+		/* Touch screen listeners */
+		var touchable = 'createTouch' in document; // Check whether to add the relevant listeners
+
+		if(touchable) {
+			this.canvas.addEventListener("touchstart", this.mouseMove, false);
+			this.canvas.addEventListener("touchmove", this.mouseMove, false);
+			this.canvas.addEventListener("touchend", this.mouseUp, false);
+			this.canvas.addEventListener("touchcancel", this.mouseLeave, false);
+			this.canvas.addEventListener("touchleave", this.mouseLeave, false);
+		}
+
+		this.generateNodes('default.jpg'); 	// Create nodes based on default image and start animating
 	},
 
 	/*** Recursive animation of nodes ***/
