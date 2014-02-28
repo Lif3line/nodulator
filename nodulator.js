@@ -1,7 +1,6 @@
 /*
 *	Take in an image, convert it to a bunch of colourful nodes painted onto a canvas then animate those notes so they dynamically move away
-*	from the mouse while hovering or towards it while the left mouse button is held down. Optionally lines of a thickness proportional to the
-*	distance between nodes may be drawn between nodes for added special effects.
+*	from the mouse while hovering or towards it while the left mouse button is held down.
 */
 
 /*** Shim for ensuring animation always works ***/
