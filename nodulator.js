@@ -174,6 +174,8 @@ var Nodulator = {
 		var img = new Image();
 
 		img.onload = function() { //Draw onto canvas to access pixel data
+			Nodulator.nodes =[]; //Flush any existing nodes
+
 			Nodulator.ctx.clearRect(0, 0, Nodulator.canvas.width, Nodulator.canvas.height); //Clear canvas
 
 			var offsetX = Math.floor((Nodulator.canvas.width - img.width) / 2); //Center image within canvas
