@@ -11,8 +11,10 @@ var Nodulator = {
 		inputID: 'imageLoader', //ID of image input element to add listener to
 		canvasID: 'nodeBox',
 
-		nodeSparsity: 12, //Distance in px between nodes on creation
-		drawThreshold: 220 //Grayscale pixel threshold; pixels whiter than this value will not be converted to nodes (0-255)
+		nodeSparsity: 12, //Distance(px) between nodes on creation
+		drawThreshold: 220, //Grayscale pixel threshold; pixels whiter than this value will not be converted to nodes (0-255)
+
+		nodeRadius: 5 //Radius(px) of nodes when drawn
 	},
 
 	canvas: null, //Canvas data
@@ -34,6 +36,7 @@ var Nodulator = {
 		reader.onload = function(event){
 			Nodulator.generateNodes(event.target.result);
 		}
+		reader.readAsDataURL(e.target.files[0]);
 	},
 
 	/*** Take in an image source and convert it into the titular nodes***/
@@ -76,8 +79,22 @@ var Nodulator = {
 					}
 				}
 			}
+			Nodulator.drawNodes(); //Place here to ensure only started once node generation is complete
 		};
 		img.src = src;
-	}
+	},
 
+	/*** Draw each node ***/
+	drawNodes: function() {
+		for(var i = 0; i < this.nodes.length; i++) {
+			this.ctx.fillStyle = this.nodes[i].colour;
+			this.ctx.strokeStyle = this.nodes[i].colour;
+			this.ctx.beginPath();
+			this.ctx.arc(this.nodes[i].x, this.nodes[i].y, this.settings.nodeRadius ,0 , 6.284); //6.284 instead of 2*pi used for effeciency
+			this.ctx.closePath();
+			this.ctx.fill();
+		}
+	}
 }
+
+Nodulator.init();
