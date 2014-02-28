@@ -7,4 +7,5 @@ html, body {
 
 #nodeBox {
 	background-color: #dddddd; /* Won't work on Andriod */
+	cursor: crosshair;
 }

@@ -47,13 +47,24 @@ var Nodulator = {
 		nodeSparsity: 12, //Distance(px) between nodes on creation
 		drawThreshold: 220, //Grayscale pixel threshold; pixels whiter than this value will not be converted to nodes (0-255)
 
-		nodeRadius: 5 //Radius(px) of nodes when drawn
+		nodeRadius: 5, //Radius(px) of nodes when drawn
+		pushRating: 150, //To minimise computation these ratings are used; fairly arbitary - higher number = greater push/pull strength
+		pullRating: 50,
+		returnPercent: 0.05, //Percentage of distance moved back towards starting point each frame
+
+		mouseOutDistance: -9999 //When off canvas assume mouse is arbitarily too far away to affect nodes
 	},
 
 	canvas: null, //Canvas data
 	ctx: null,       //Canvas context data
 
-	nodes: [], // Array for nodes; each node is an object containing current and initial X & Y co-ordinates and the nodes colour
+	nodes: [], //Array for nodes; each node is an object containing current and initial X & Y co-ordinates and the nodes colour
+
+	mouse: { //Mouse starting set up as far as canvas is concerned
+		x: -9999,
+		y: -9999,
+		down: false
+	},
 
 	/*** Add listeners then start animating using a default image ***/
 	init: function() {
@@ -89,10 +100,33 @@ var Nodulator = {
 	animate: function() {
 		 this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); //Clear
 
-		 /* Redraw */
+		 /* Update and redraw */
+		 this.updateNodes();
 		 this.drawNodes();
 
 		 requestAnimationFrame(function(){ Nodulator.animate() }); //Get new frame (see below for compatability shim)
+	},
+
+	/*** Calculate how far nodes should move to avoid the mouse - update positions accordingly ***/
+	updateNodes: function() { // Work in polar format with radians (save conversions) where the node is in relation to the mouse
+		var i, angle, distance;
+		for (i = 0; i < this.nodes.length; i++ ){
+			angle = Math.atan2(this.nodes[i].y - this.mouse.y, this.nodes[i].x - this.mouse.x);
+			distance =  Math.sqrt(Math.pow(this.mouse.x - this.nodes[i].x,2) + Math.pow(this.mouse.y - this.nodes[i].y,2));
+
+			/* Calculate new position for nodes based on distance from mouse and from its origin */
+			if (!this.mouse.down) { // Move away from mouse
+				this.nodes[i].x += Math.cos(angle) * (this.settings.pushRating / distance) + (this.nodes[i].initX - this.nodes[i].x)
+					* this.settings.returnPercent;
+				this.nodes[i].y += Math.sin(angle) * (this.settings.pushRating / distance) + (this.nodes[i].initY - this.nodes[i].y)
+					* this.settings.returnPercent;
+			} else if (distance > 10) { // Suck towards mouse if pull is sufficient (and mouse down) - stop moving when near to mouse
+				this.nodes[i].x += Math.cos(angle) * -(this.settings.pullRating / distance) + (this.nodes[i].initX - this.nodes[i].x)
+					* this.settings.returnPercent;
+				this.nodes[i].y += Math.sin(angle) * -(this.settings.pullRating / distance) + (this.nodes[i].initY - this.nodes[i].y)
+					* this.settings.returnPercent;
+			}
+		}
 	},
 
 	/*** Draw each node ***/
@@ -107,7 +141,26 @@ var Nodulator = {
 		}
 	},
 
-	/*** Note: 'this' context change***/
+	/*** Mouse functions ***/
+	mouseDown: function(e) { // Note that mouse is down
+		Nodulator.mouse.down = true;
+	},
+
+	mouseMove: function(e) { // Save mouse position (using whichever method works in current browser)
+		Nodulator.mouse.x = e.offsetX || (e.layerX - Nodulator.canvas.offsetLeft);
+		Nodulator.mouse.y = e.offsetY || (e.layerY - Nodulator.canvas.offsetTop);
+	},
+
+	mouseUp: function(e) { // Note that mouse is up
+		Nodulator.mouse.down = false;
+	},
+
+	mouseLeave: function(e) { // Move mouse far enough away to not affect nodes
+		Nodulator.mouse.x = Nodulator.settings.mouseOutDistance;
+		Nodulator.mouse.y = Nodulator.settings.mouseOutDistance;
+	},
+
+	/*** Load in new image and move on to generation nodes and animating immediately ***/
 	updateImage: function(e) {
 		var reader = new FileReader();
 		reader.onload = function(event){
