@@ -52,6 +52,10 @@ var Nodulator = {
 		pullRating: 50,
 		returnPercent: 0.05, //Percentage of distance moved back towards starting point each frame
 
+		maxLineThickness: 5,// Line thickness maximum
+		maxLineLength: 15,	// Max distance lines will be drawn across
+		minLineLength: 6,	// For effeciency lines won't be drawn under this length
+
 		mouseOutDistance: -9999 //When off canvas assume mouse is arbitarily too far away to affect nodes
 	},
 
@@ -102,6 +106,7 @@ var Nodulator = {
 
 		 /* Update and redraw */
 		 this.updateNodes();
+		 this.drawLines(); //Lines first so nodes on top
 		 this.drawNodes();
 
 		 requestAnimationFrame(function(){ Nodulator.animate() }); //Get new frame (see below for compatability shim)
@@ -138,6 +143,31 @@ var Nodulator = {
 			this.ctx.arc(this.nodes[i].x, this.nodes[i].y, this.settings.nodeRadius ,0 , 6.284); //6.284 instead of 2*pi used for effeciency
 			this.ctx.closePath();
 			this.ctx.fill();
+		}
+	},
+
+	/*** Draw on lines between nearby nodes ***/
+	drawLines: function() {
+		var i, j, curNode, otherNode, distance;
+		for (i = 0; i < this.nodes.length; i++) {
+			curNode = this.nodes[i]; // For clarity
+
+			/* Draw in same colour as node */
+			this.ctx.fillStyle = curNode.colour;
+			this.ctx.strokeStyle = curNode.colour;
+
+			/* Calculate distances and if less than the line draw distance create a dynamic thickness line */
+			for (j = i; j < this.nodes.length; j++) {
+				otherNode = this.nodes[j];
+				distance = Math.sqrt(Math.pow(otherNode.x - curNode.x,2) + Math.pow(otherNode.y - curNode.y,2));
+				if ((distance < this.settings.maxLineLength) && (distance > this.settings.minLineLength)) {
+					this.ctx.lineWidth = (1 - (distance / this.settings.maxLineLength)) * this.settings.maxLineThickness;
+					this.ctx.beginPath();
+					this.ctx.moveTo(curNode.x, curNode.y);
+					this.ctx.lineTo(otherNode.x, otherNode.y);
+					this.ctx.stroke();
+				}
+			}
 		}
 	},
 
