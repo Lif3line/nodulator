@@ -1,16 +1,14 @@
 /*
 *	Take in an image, convert it to a bunch of colourful nodes painted onto a canvas then animate those notes so they dynamically move away
-*	from the mouse while hovering or towards it while the left mouse button is held down.
+*	from the mouse while hovering or towards it while the left mouse button is held down. Adam Hartwell.
 */
 
 /*** Shim for ensuring animation always works ***/
 // http://paulirish.com/2011/requestanimationframe-for-smart-animating/
 // http://my.opera.com/emoller/blog/2011/12/20/requestanimationframe-for-smart-er-animating
-
+//
 // requestAnimationFrame polyfill by Erik Möller. fixes from Paul Irish and Tino Zijdel
-
 // MIT license
-
 (function() {
     var lastTime = 0;
     var vendors = ['ms', 'moz', 'webkit', 'o'];
@@ -51,7 +49,7 @@ var Nodulator = {
 		pullRating: 50,
 		returnPercent: 0.05, //Percentage of distance moved back towards starting point each frame
 
-		mouseOutDistance: -9999 //When off canvas assume mouse is arbitarily too far away to affect nodes
+		mouseOutDistance: -9999 //When off canvas assume mouse is arbitrarily too far away to affect nodes
 	},
 
 	canvas: null, //Canvas data
