@@ -1,6 +1,7 @@
 /*
-*	Take in an image, convert it to a bunch of colourful nodes painted onto a canvas then animate those notes so they dynamically move away
-*	from the mouse while hovering or towards it while the left mouse button is held down. Adam Hartwell.
+*	Take in an image, convert it to a bunch of colourful nodes painted onto a canvas then animate those notes so they
+* dynamically move away from the mouse while hovering or towards it while the left mouse button is held down.
+* Adam Hartwell 2014.
 */
 
 /*** Shim for ensuring animation always works ***/
@@ -38,26 +39,26 @@
 var Nodulator = {
 
 	settings: {
-		inputID: 'imageLoader', //ID of image input element to add listener to
+		inputID: 'imageLoader', // ID of image input element to add listener to
 		canvasID: 'nodeBox',
 
-		nodeSparsity: 12, //Distance(px) between nodes on creation
-		drawThreshold: 220, //Grayscale pixel threshold; pixels whiter than this value will not be converted to nodes (0-255)
+		nodeSparsity: 12,       // Distance(px) between nodes on creation
+		drawThreshold: 220,     // Grayscale threshold; pixels whiter than this value will not be converted to nodes (0-255)
 
-		nodeRadius: 5, //Radius(px) of nodes when drawn
-		pushRating: 150, //To minimise computation these ratings are used; fairly arbitary - higher number = greater push/pull strength
-		pullRating: 50,
-		returnPercent: 0.05, //Percentage of distance moved back towards starting point each frame
+		nodeRadius: 5,          // Radius(px) of nodes when drawn
+		pushRating: 150,        // To minimise computation these ratings are used; fairly arbitary
+		pullRating: 50,         // higher number = greater push/pull strength
+		returnPercent: 0.05,    // Percentage of distance moved back towards starting point each frame
 
-		mouseOutDistance: -9999 //When off canvas assume mouse is arbitrarily too far away to affect nodes
+		mouseOutDistance: -9999 // When off canvas assume mouse is arbitrarily too far away to affect nodes
 	},
 
-	canvas: null, //Canvas data
-	ctx: null,       //Canvas context data
+	canvas: null, // Canvas data
+	ctx: null,    // Canvas context data
 
-	nodes: [], //Array for nodes; each node is an object containing current and initial X & Y co-ordinates and the nodes colour
+	nodes: [],    // Array for nodes; each node is an object containing current and initial X & Y co-ordinates and the nodes colour
 
-	mouse: { //Mouse starting set up as far as canvas is concerned
+	mouse: {      // Mouse starting set up as far as canvas is concerned
 		x: -9999,
 		y: -9999,
 		down: false
@@ -148,7 +149,7 @@ var Nodulator = {
 		Nodulator.mouse.y = e.offsetY || (e.layerY - Nodulator.canvas.offsetTop);
 	},
 
-	mouseUp: function(e) { // Note that mouse is up
+	mouseUp: function(e) {   // Note that mouse is up
 		Nodulator.mouse.down = false;
 	},
 
@@ -170,20 +171,20 @@ var Nodulator = {
 	generateNodes: function(src) {
 		var img = new Image();
 
-		img.onload = function() { //Draw onto canvas to access pixel data
-			Nodulator.nodes =[]; //Flush any existing nodes
+		img.onload = function() { // Draw onto canvas to access pixel data
+			Nodulator.nodes =[];  // Flush any existing nodes
 
-			Nodulator.ctx.clearRect(0, 0, Nodulator.canvas.width, Nodulator.canvas.height); //Clear canvas
+			Nodulator.ctx.clearRect(0, 0, Nodulator.canvas.width, Nodulator.canvas.height); // Clear canvas
 
-			var offsetX = Math.floor((Nodulator.canvas.width - img.width) / 2); //Center image within canvas
+			var offsetX = Math.floor((Nodulator.canvas.width - img.width) / 2);             // Center image within canvas
 			var offsetY = Math.floor((Nodulator.canvas.height - img.height) / 2);
 
-			Nodulator.ctx.drawImage(img, offsetX, offsetY); //Actual drawing
+			Nodulator.ctx.drawImage(img, offsetX, offsetY); // Actual drawing
 
 			/* Get image data and associated pixel data to work with */
 			var imageData = Nodulator.ctx.getImageData(0, 0, Nodulator.canvas.width, Nodulator.canvas.height);
 			var pixelData = imageData.data;
-			var i, j, pos, colour, node; //Variables for loop
+			var i, j, pos, colour, node; // Variables for loop
 
 			/* Loop to check each pixel in a grid with spaces defined by this.nodeSparsity*/
 			for (i = 0; i < Nodulator.canvas.width; i += Nodulator.settings.nodeSparsity) {
@@ -197,18 +198,18 @@ var Nodulator = {
 
 						colour = 'rgba(' + pixelData[pos] + ',' + pixelData[pos + 1] + ',' + pixelData[pos + 2] + ',' + '1)';
 
-						node = { //Node object literal
+						node = { // Node object literal
 							x: i,
 							y: j,
 							initX: i,
 							initY: j,
 							colour: colour
 						}
-						Nodulator.nodes.push(node); //Append to the array of nodes
+						Nodulator.nodes.push(node); // Append to the array of nodes
 					}
 				}
 			}
-			Nodulator.animate(); //Place here to ensure only started once node generation is complete
+			Nodulator.animate(); // Place here to ensure only started once node generation is complete
 		};
 		img.src = src;
 	}
