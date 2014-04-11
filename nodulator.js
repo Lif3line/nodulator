@@ -1,5 +1,5 @@
 /*
-*	Take in an image, convert it to a bunch of colourful nodes painted onto a canvas then animate those notes so they
+* Take in an image, convert it to a bunch of colourful nodes painted onto a canvas then animate those notes so they
 * dynamically move away from the mouse while hovering or towards it while the left mouse button is held down.
 * Adam Hartwell 2014.
 */
@@ -43,7 +43,7 @@ var Nodulator = {
 		canvasID: 'nodeBox',
 
 		nodeSparsity: 12,       // Distance(px) between nodes on creation
-		drawThreshold: 220,     // Grayscale threshold; pixels whiter than this value will not be converted to nodes (0-255)
+		drawThreshold: 220,     // Grayscale threshold; pixels whiter than this value will not be converted to nodes
 
 		nodeRadius: 5,          // Radius(px) of nodes when drawn
 		pushRating: 150,        // To minimise computation these ratings are used; fairly arbitary
@@ -56,7 +56,7 @@ var Nodulator = {
 	canvas: null, // Canvas data
 	ctx: null,    // Canvas context data
 
-	nodes: [],    // Array for nodes; each node is an object containing current and initial X & Y co-ordinates and the nodes colour
+	nodes: [],    // Array for nodes; each node contains current and initial X & Y co-ordinates and the nodes colour
 
 	mouse: {      // Mouse starting set up as far as canvas is concerned
 		x: -9999,
@@ -106,23 +106,24 @@ var Nodulator = {
 	},
 
 	/*** Calculate how far nodes should move to avoid the mouse - update positions accordingly ***/
-	updateNodes: function() { // Work in polar format with radians (save conversions) where the node is in relation to the mouse
+	updateNodes: function() { // Work in polar format with radians where the node is in relation to the mouse
 		var i, angle, distance;
 		for (i = 0; i < this.nodes.length; i++ ){
 			angle = Math.atan2(this.nodes[i].y - this.mouse.y, this.nodes[i].x - this.mouse.x);
-			distance =  Math.sqrt(Math.pow(this.mouse.x - this.nodes[i].x,2) + Math.pow(this.mouse.y - this.nodes[i].y,2));
+			distance = Math.sqrt(Math.pow(this.mouse.x - this.nodes[i].x,2)
+				+ Math.pow(this.mouse.y - this.nodes[i].y,2));
 
 			/* Calculate new position for nodes based on distance from mouse and from its origin */
 			if (!this.mouse.down) { // Move away from mouse
-				this.nodes[i].x += Math.cos(angle) * (this.settings.pushRating / distance) + (this.nodes[i].initX - this.nodes[i].x)
-					* this.settings.returnPercent;
-				this.nodes[i].y += Math.sin(angle) * (this.settings.pushRating / distance) + (this.nodes[i].initY - this.nodes[i].y)
-					* this.settings.returnPercent;
-			} else if (distance > 10) { // Suck towards mouse if pull is sufficient (and mouse down) - stop moving when near to mouse
-				this.nodes[i].x += Math.cos(angle) * -(this.settings.pullRating / distance) + (this.nodes[i].initX - this.nodes[i].x)
-					* this.settings.returnPercent;
-				this.nodes[i].y += Math.sin(angle) * -(this.settings.pullRating / distance) + (this.nodes[i].initY - this.nodes[i].y)
-					* this.settings.returnPercent;
+				this.nodes[i].x += Math.cos(angle) * (this.settings.pushRating / distance)
+					+ (this.nodes[i].initX - this.nodes[i].x) * this.settings.returnPercent;
+				this.nodes[i].y += Math.sin(angle) * (this.settings.pushRating / distance)
+					+ (this.nodes[i].initY - this.nodes[i].y) * this.settings.returnPercent;
+			} else if (distance > 10) { // Suck towards mouse if pull is sufficient - stop moving when near to mouse
+				this.nodes[i].x += Math.cos(angle) * -(this.settings.pullRating / distance)
+					+ (this.nodes[i].initX - this.nodes[i].x) * this.settings.returnPercent;
+				this.nodes[i].y += Math.sin(angle) * -(this.settings.pullRating / distance)
+					+ (this.nodes[i].initY - this.nodes[i].y) * this.settings.returnPercent;
 			}
 		}
 	},
@@ -133,8 +134,8 @@ var Nodulator = {
 			this.ctx.fillStyle = this.nodes[i].colour;
 			this.ctx.strokeStyle = this.nodes[i].colour;
 			this.ctx.beginPath();
-			this.ctx.arc(this.nodes[i].x, this.nodes[i].y, this.settings.nodeRadius ,0 , 6.284); //6.284 instead of 2*pi used for effeciency
-			this.ctx.closePath();
+			this.ctx.arc(this.nodes[i].x, this.nodes[i].y, this.settings.nodeRadius ,0 , 6.284);
+			this.ctx.closePath(); // 6.284 instead of 2*pi used for effeciency
 			this.ctx.fill();
 		}
 	},
@@ -176,7 +177,7 @@ var Nodulator = {
 
 			Nodulator.ctx.clearRect(0, 0, Nodulator.canvas.width, Nodulator.canvas.height); // Clear canvas
 
-			var offsetX = Math.floor((Nodulator.canvas.width - img.width) / 2);             // Center image within canvas
+			var offsetX = Math.floor((Nodulator.canvas.width - img.width) / 2);             // Center image
 			var offsetY = Math.floor((Nodulator.canvas.height - img.height) / 2);
 
 			Nodulator.ctx.drawImage(img, offsetX, offsetY); // Actual drawing
@@ -191,12 +192,13 @@ var Nodulator = {
 				for (j = 0; j < Nodulator.canvas.height; j += Nodulator.settings.nodeSparsity) {
 					pos = (i + (j * imageData.width)) * 4;
 					/* Data set up in 1D array: R-G-B-A and repeat */
-					if (pixelData[pos] > Nodulator.settings.drawThreshold && pixelData[pos + 1] > Nodulator.settings.drawThreshold
-					&& pixelData[pos + 2] > Nodulator.settings.drawThreshold  || pixelData[pos + 3] === 0) {
-						continue; // Ignore pixels that are too white or are transparent (canvas background)
+					if (pixelData[pos] > Nodulator.settings.drawThreshold
+						&& pixelData[pos + 1] > Nodulator.settings.drawThreshold
+						&& pixelData[pos + 2] > Nodulator.settings.drawThreshold  || pixelData[pos + 3] === 0) {
+							continue; // Ignore pixels that are too white or are transparent (canvas background)
 					} else {
 
-						colour = 'rgba(' + pixelData[pos] + ',' + pixelData[pos + 1] + ',' + pixelData[pos + 2] + ',' + '1)';
+						colour = 'rgba(' + pixelData[pos] +','+ pixelData[pos + 1] +','+ pixelData[pos + 2] +','+ '1)';
 
 						node = { // Node object literal
 							x: i,
@@ -215,4 +217,4 @@ var Nodulator = {
 	}
 }
 
-Nodulator.init(); //Start the Nodulator!!
+Nodulator.init(); // Start the Nodulator!!
